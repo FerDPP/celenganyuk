@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { supabase } from './supabase'
 import './App.css'
 
 // ==================== CONSTANTS ====================
@@ -190,14 +191,8 @@ function ConfirmModal({ show, title, message, icon, onConfirm, onCancel }) {
 
 // ==================== MAIN APP ====================
 function App() {
-  const [transactions, setTransactions] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      return saved ? JSON.parse(saved) : []
-    } catch {
-      return []
-    }
-  })
+  const [transactions, setTransactions] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const [selectedUser, setSelectedUser] = useState('ferdy')
   const [customUser, setCustomUser] = useState('')
@@ -209,9 +204,36 @@ function App() {
   const [toasts, setToasts] = useState([])
   const [confirmModal, setConfirmModal] = useState({ show: false })
 
+  // Fetch transactions from Supabase on mount
+  const fetchTransactions = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+
+      const mapped = (data || []).map(row => ({
+        id: row.id,
+        user: row.user_name,
+        amount: Number(row.amount),
+        product: row.product || 'uang',
+        type: row.type,
+        note: row.note || '',
+        date: row.created_at,
+      }))
+      setTransactions(mapped)
+    } catch (err) {
+      console.error('Gagal ambil data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions))
-  }, [transactions])
+    fetchTransactions()
+  }, [fetchTransactions])
 
   const showToast = useCallback((message, type = 'success') => {
     const id = generateId()
@@ -251,7 +273,7 @@ function App() {
 
   const allUsers = [...new Set(transactions.map(t => t.user))]
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const userName = getActiveUserName()
     if (!userName) {
@@ -274,14 +296,35 @@ function App() {
     }
 
     const productInfo = getProductInfo(selectedProduct)
+
+    // Insert to Supabase
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        user_name: userName,
+        amount: numAmount,
+        product: selectedProduct,
+        type: txType,
+        note: note.trim(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Gagal simpan:', error)
+      showToast('Gagal menyimpan! Coba lagi ya.', 'error')
+      return
+    }
+
+    // Add to local state
     const newTx = {
-      id: generateId(),
-      user: userName,
-      amount: numAmount,
-      product: selectedProduct,
-      type: txType,
-      note: note.trim(),
-      date: new Date().toISOString(),
+      id: data.id,
+      user: data.user_name,
+      amount: Number(data.amount),
+      product: data.product,
+      type: data.type,
+      note: data.note || '',
+      date: data.created_at,
     }
 
     setTransactions(prev => [...prev, newTx])
@@ -303,7 +346,19 @@ function App() {
       title: 'Hapus Transaksi?',
       message: `Yakin mau hapus transaksi ${tx.type === 'deposit' ? 'nabung' : 'tarik'} ${productInfo.emoji} ${formatAmount(tx.amount, tx.product || 'uang')} oleh ${tx.user}?`,
       icon: '🗑️',
-      onConfirm: () => {
+      onConfirm: async () => {
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', tx.id)
+
+        if (error) {
+          console.error('Gagal hapus:', error)
+          showToast('Gagal menghapus! Coba lagi.', 'error')
+          setConfirmModal({ show: false })
+          return
+        }
+
         setTransactions(prev => prev.filter(t => t.id !== tx.id))
         setConfirmModal({ show: false })
         showToast('Transaksi berhasil dihapus', 'info')
