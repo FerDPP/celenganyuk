@@ -1,0 +1,175 @@
+:root {
+  /* Color Palette - Soft, Warm & Elegant */
+  --bg-primary: #faf8f5;
+  --bg-secondary: #f5f0ea;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-glass: rgba(255, 255, 255, 0.65);
+  --bg-glass-hover: rgba(255, 255, 255, 0.9);
+
+  --accent-primary: #c8956c;
+  --accent-primary-light: #ddb08a;
+  --accent-primary-glow: rgba(200, 149, 108, 0.2);
+  --accent-secondary: #a8c5a0;
+  --accent-tertiary: #8fb8c9;
+  --accent-purple: #b0a3c8;
+  --accent-success: #7db87d;
+  --accent-success-glow: rgba(125, 184, 125, 0.15);
+  --accent-warning: #d4b86a;
+  --accent-danger: #c97a6a;
+  --accent-gold: #c9a84c;
+  --accent-gold-glow: rgba(201, 168, 76, 0.15);
+
+  --text-primary: #3d3229;
+  --text-secondary: #78706a;
+  --text-muted: #b5ada6;
+
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-accent: rgba(200, 149, 108, 0.25);
+
+  --gradient-hero: linear-gradient(135deg, #c8956c 0%, #d4b86a 50%, #a8c5a0 100%);
+  --gradient-warm: linear-gradient(135deg, #ddb08a 0%, #e8d5c0 100%);
+  --gradient-sage: linear-gradient(135deg, #a8c5a0 0%, #c5dbc0 100%);
+  --gradient-success: linear-gradient(135deg, #7db87d 0%, #a8c5a0 100%);
+
+  --shadow-card: 0 2px 16px rgba(61, 50, 41, 0.05), 0 1px 3px rgba(61, 50, 41, 0.03);
+  --shadow-card-hover: 0 8px 32px rgba(61, 50, 41, 0.08), 0 2px 8px rgba(61, 50, 41, 0.04);
+  --shadow-button: 0 4px 14px rgba(200, 149, 108, 0.3);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animated gradient blobs */
+body::before {
+  content: '';
+  position: fixed;
+  top: -30%;
+  right: -15%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 149, 108, 0.08) 0%, transparent 70%);
+  z-index: -1;
+  animation: blobDrift1 20s ease-in-out infinite;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -25%;
+  left: -15%;
+  width: 550px;
+  height: 550px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 197, 160, 0.08) 0%, transparent 70%);
+  z-index: -1;
+  animation: blobDrift2 25s ease-in-out infinite;
+}
+
+@keyframes blobDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-30px, 20px) scale(1.05); }
+  50% { transform: translate(20px, -30px) scale(0.95); }
+  75% { transform: translate(30px, 15px) scale(1.02); }
+}
+
+@keyframes blobDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(25px, -20px) scale(1.04); }
+  66% { transform: translate(-20px, 25px) scale(0.96); }
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Floating background decorations */
+.floating-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.floating-bg__item {
+  position: absolute;
+  opacity: 0.08;
+  animation: floatUp linear infinite;
+  will-change: transform;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(110vh) rotate(0deg) scale(0.8);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.12;
+  }
+  95% {
+    opacity: 0.06;
+  }
+  100% {
+    transform: translateY(-10vh) rotate(360deg) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* Extra blob for middle area */
+.floating-bg__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: blobPulse 12s ease-in-out infinite;
+}
+
+@keyframes blobPulse {
+  0%, 100% { transform: scale(1); opacity: 0.04; }
+  50% { transform: scale(1.3); opacity: 0.08; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-primary-light);
+  border-radius: var(--radius-full);
+}
+
+::selection {
+  background: var(--accent-primary-light);
+  color: white;
+}
+
